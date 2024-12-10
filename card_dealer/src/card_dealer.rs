@@ -1,12 +1,14 @@
 // Randomoness crates
 use rand::seq::SliceRandom;
 use rand::thread_rng;
+use serde::Serialize;
+
 // Card enums
 use Suit::*;
 use Rank::*;
 
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Serialize)]
 pub enum Suit {
     Hearts,
     Diamonds,
@@ -14,7 +16,7 @@ pub enum Suit {
     Spades,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Serialize)]
 pub enum Rank {
     Two,
     Three,
@@ -31,7 +33,7 @@ pub enum Rank {
     Ace,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Serialize)]
 pub struct Card {
     pub rank: Rank,
     pub suit: Suit,
