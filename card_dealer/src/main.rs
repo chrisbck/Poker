@@ -5,25 +5,27 @@ use warp::Filter;
 use std::sync::{Arc, Mutex};
 use game_controller::GameController;
 
-
-pub struct PlayerGateway{
-    game_controller: Arc<Mutex<GameController>>,    // A thread safe instance of a GameController
+pub struct PlayerGateway {
+    game_controller: Arc<Mutex<GameController>>, // A thread-safe instance of a GameController
 }
 
-impl PlayerGateway{
-    pub fn new() -> Self{
-        Self{
+impl PlayerGateway {
+    pub fn new() -> Self {
+        Self {
             game_controller: Arc::new(Mutex::new(GameController::new())),
         }
     }
 
-    pub fn deal(&self, count: usize) -> Option<Vec<crate::card_dealer::Card>>{
+    pub fn deal(&self, count: usize) -> Option<Vec<crate::card_dealer::Card>> {
         let mut controller = self.game_controller.lock().unwrap();
         controller.deal(count)
     }
+
+    pub fn reset(&self) {
+        let mut controller = self.game_controller.lock().unwrap();
+        controller.reset_deck();
+    }
 }
-
-
 
 #[tokio::main]
 async fn main() {
@@ -47,12 +49,25 @@ async fn main() {
             }
         });
 
+    // Define the /reset endpoint
+    let reset_route = warp::path("reset")
+        .and(with_gateway(gateway.clone()))
+        .map(|gateway: Arc<PlayerGateway>| {
+            gateway.reset();
+            warp::reply::json(&"Deck has been reset")
+        });
+
+    // Combine routes
+    let routes = deal_route.or(reset_route);
+
     // Start the server
-    warp::serve(deal_route).run(([127, 0, 0, 1], 3030)).await;
+    warp::serve(routes).run(([127, 0, 0, 1], 3030)).await;
 }
 
 // Helper function to pass the PlayerGateway to Warp
-fn with_gateway( gateway: Arc<PlayerGateway>,) ->
-impl Filter<Extract = (Arc<PlayerGateway>,), Error = std::convert::Infallible> + Clone {
+fn with_gateway(
+    gateway: Arc<PlayerGateway>,
+) -> impl Filter<Extract = (Arc<PlayerGateway>,), Error = std::convert::Infallible> + Clone {
     warp::any().map(move || gateway.clone())
 }
+
