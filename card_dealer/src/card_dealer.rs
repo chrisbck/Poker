@@ -11,7 +11,7 @@ pub enum Suit {
     Spades,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Rank {
     Two,
     Three,

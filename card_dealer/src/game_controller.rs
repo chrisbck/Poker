@@ -1,11 +1,11 @@
 use crate::card_dealer::{Card, Deck};
-use crate::poker_hand::{find_best_hand, HandRank};
+use crate::poker_hand::{find_best_hand, HandRank, Hand};
 
 pub struct GameController {
     deck: Deck,
     community_cards: Vec<Card>,       // Holds all 5 community cards
     player_hole_cards: Vec<Card>,    // Single player's hole cards
-    last_evaluated_hand: Option<HandRank>, // Stores the most recent evaluation
+    last_evaluated_hand: Option<Hand>, // Stores the most recent evaluation with cards
 }
 
 impl GameController {
@@ -44,7 +44,7 @@ impl GameController {
         self.last_evaluated_hand = None;
     }
 
-    pub fn get_last_evaluated_hand(&self) -> Option<HandRank> {
+    pub fn get_last_evaluated_hand(&self) -> Option<Hand> {
         self.last_evaluated_hand.clone()
     }
 

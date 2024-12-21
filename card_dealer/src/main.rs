@@ -71,7 +71,6 @@ async fn main() {
     });
 
 
-    // Route to get the best hand evaluation
     let evaluate_route = warp::path("evaluate")
     .and(with_state(state.clone()))
     .map(move |state: Arc<AppState>| {
@@ -80,7 +79,8 @@ async fn main() {
         if let Some(best_hand) = controller.get_last_evaluated_hand() {
             warp::reply::json(&serde_json::json!({
                 "type": "evaluation",
-                "best_hand": best_hand
+                "rank": best_hand.rank, // Include the rank of the hand
+                "cards": best_hand.cards // Include the cards forming the best hand
             }))
         } else {
             warp::reply::json(&serde_json::json!({
@@ -89,6 +89,7 @@ async fn main() {
             }))
         }
     });
+
 
 
     // Combine all routes
