@@ -25,9 +25,9 @@ pub struct Hand {
 
 impl Hand {
     /// Creates a new `Hand` instance by evaluating the given cards
-    pub fn new(cards: Vec<Card>) -> Self {
-        let rank = evaluate_hand(&cards[..]); // Convert Vec<Card> to &[Card]
-
+    pub fn new(mut cards: Vec<Card>) -> Self {
+        cards.sort_by(|a, b| b.rank.cmp(&a.rank)); // Sort by rank descending
+        let rank = evaluate_hand(&cards[..]);
         Self { cards, rank }
     }
 
@@ -54,12 +54,14 @@ pub fn find_best_hand(cards: &[Card]) -> Hand {
         .iter()
         .combinations(5) // Generate all 5-card combinations
         .map(|combination| {
-            let combination_cards = combination.into_iter().copied().collect::<Vec<Card>>();
+            let mut combination_cards = combination.into_iter().copied().collect::<Vec<Card>>();
+            combination_cards.sort_by(|a, b| b.rank.cmp(&a.rank)); // Sort by rank descending
             Hand::new(combination_cards) // Create a `Hand` for each combination
         })
         .max_by(|hand1, hand2| hand1.compare(hand2)) // Use `compare` for tie-breaking
         .unwrap_or_else(|| Hand::new(vec![])) // Default to an empty hand
 }
+
 
 
 fn evaluate_hand(hand: &[Card]) -> HandRank {
