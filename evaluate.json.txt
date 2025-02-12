@@ -1,0 +1,69 @@
+{
+  "community_cards": [
+    {
+      "rank": "Ten",
+      "suit": "Spades"
+    },
+    {
+      "rank": "Nine",
+      "suit": "Diamonds"
+    },
+    {
+      "rank": "Six",
+      "suit": "Diamonds"
+    },
+    {
+      "rank": "Ten",
+      "suit": "Diamonds"
+    },
+    {
+      "rank": "Seven",
+      "suit": "Hearts"
+    }
+  ],
+  "players": [
+    {
+      "hand_strength": "Straight",
+      "hole_cards": [
+        {
+          "rank": "Six",
+          "suit": "Hearts"
+        },
+        {
+          "rank": "Eight",
+          "suit": "Clubs"
+        }
+      ],
+      "name": "Alice"
+    },
+    {
+      "hand_strength": "OnePair",
+      "hole_cards": [
+        {
+          "rank": "Jack",
+          "suit": "Diamonds"
+        },
+        {
+          "rank": "Five",
+          "suit": "Spades"
+        }
+      ],
+      "name": "Bob"
+    },
+    {
+      "hand_strength": "OnePair",
+      "hole_cards": [
+        {
+          "rank": "Queen",
+          "suit": "Spades"
+        },
+        {
+          "rank": "King",
+          "suit": "Hearts"
+        }
+      ],
+      "name": "Charlie"
+    }
+  ],
+  "type": "evaluation"
+}

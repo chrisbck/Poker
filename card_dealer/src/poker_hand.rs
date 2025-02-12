@@ -126,3 +126,67 @@ fn check_straight(ranks: &[usize]) -> bool {
 }
 
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::card_dealer::{Card, Rank, Suit};
+
+    /// Helper function to create a card
+    fn create_card(rank: Rank, suit: Suit) -> Card {
+        Card { rank, suit }
+    }
+
+    #[test]
+    fn test_best_hand_scenario() {
+        // Community cards: 9H, JH, 5C, AS, JD
+        let community_cards = vec![
+            create_card(Rank::Nine, Suit::Hearts),
+            create_card(Rank::Jack, Suit::Hearts),
+            create_card(Rank::Five, Suit::Clubs),
+            create_card(Rank::Ace, Suit::Spades),
+            create_card(Rank::Jack, Suit::Diamonds),
+        ];
+
+        // Player 1: 5H, 7S
+        let player1_cards = vec![
+            create_card(Rank::Five, Suit::Hearts),
+            create_card(Rank::Seven, Suit::Spades),
+        ];
+
+        // Player 2: KC, 9H
+        let player2_cards = vec![
+            create_card(Rank::King, Suit::Clubs),
+            create_card(Rank::Nine, Suit::Hearts),
+        ];
+
+        // Player 3: 10D, AH
+        let player3_cards = vec![
+            create_card(Rank::Ten, Suit::Diamonds),
+            create_card(Rank::Ace, Suit::Hearts),
+        ];
+
+        // Evaluate the best hand for each player
+        let player1_hand = find_best_hand(&[player1_cards.clone(), community_cards.clone()].concat());
+        let player2_hand = find_best_hand(&[player2_cards.clone(), community_cards.clone()].concat());
+        let player3_hand = find_best_hand(&[player3_cards.clone(), community_cards.clone()].concat());
+
+        // Compare hands to determine the winner
+        let mut best_hand = &player1_hand;
+        if player2_hand.compare(best_hand) == std::cmp::Ordering::Greater {
+            best_hand = &player2_hand;
+        }
+        if player3_hand.compare(best_hand) == std::cmp::Ordering::Greater {
+            best_hand = &player3_hand;
+        }
+
+        // Print the results for debugging
+        println!("Player 1 Hand: {:?}, Rank: {:?}", player1_hand.cards, player1_hand.rank);
+        println!("Player 2 Hand: {:?}, Rank: {:?}", player2_hand.cards, player2_hand.rank);
+        println!("Player 3 Hand: {:?}, Rank: {:?}", player3_hand.cards, player3_hand.rank);
+        println!("Winning Hand: {:?}, Rank: {:?}", best_hand.cards, best_hand.rank);
+
+        // Assert the correct winner
+        assert_eq!(best_hand.rank, HandRank::TwoPair); // The strongest expected hand
+    }
+}
+
