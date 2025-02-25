@@ -31,39 +31,49 @@ impl Hand {
         Self { cards, rank }
     }
 
-    /// Compares two hands, including tie-breaking logic
-    pub fn compare(&self, other: &Self) -> Ordering {
+    /// Compares two hands to determine the winner.
+    pub fn compare_two_hands(&self, other: &Self) -> std::cmp::Ordering {
         match self.rank.cmp(&other.rank) {
-            Ordering::Equal => {
-                // Tie-breaking logic for hands with equal rank
-                for (card1, card2) in self.cards.iter().zip(&other.cards) {
+            std::cmp::Ordering::Equal => {
+                // Sort and compare the highest-ranked cards as tie-breakers
+                let mut self_sorted = self.cards.clone();
+                let mut other_sorted = other.cards.clone();
+                self_sorted.sort_by(|a, b| b.rank.cmp(&a.rank));
+                other_sorted.sort_by(|a, b| b.rank.cmp(&a.rank));
+    
+                for (card1, card2) in self_sorted.iter().zip(&other_sorted) {
                     match card1.rank.cmp(&card2.rank) {
-                        Ordering::Equal => continue,
-                        other => return other,
+                        std::cmp::Ordering::Equal => continue,
+                        ordering => return ordering,
                     }
                 }
-                Ordering::Equal // Completely tied
+                std::cmp::Ordering::Equal
             }
-            other => other,
+            ordering => ordering,
         }
     }
+    
 }
 
+/// Finds the best possible hand from a set of cards
+/// by generating all possible 5-card combinations and comparing them.
+/// Returns the best hand found.
 pub fn find_best_hand(cards: &[Card]) -> Hand {
     cards
         .iter()
         .combinations(5) // Generate all 5-card combinations
         .map(|combination| {
-            let mut combination_cards = combination.into_iter().copied().collect::<Vec<Card>>();
+            let mut combination_cards = combination.into_iter().copied().collect::<Vec<Card>>();    // Convert the combination to a Vec<Card>
             combination_cards.sort_by(|a, b| b.rank.cmp(&a.rank)); // Sort by rank descending
             Hand::new(combination_cards) // Create a `Hand` for each combination
         })
-        .max_by(|hand1, hand2| hand1.compare(hand2)) // Use `compare` for tie-breaking
+        .max_by(|hand1, hand2| hand1.compare_two_hands(hand2)) // Use `compare` for tie-breaking
         .unwrap_or_else(|| Hand::new(vec![])) // Default to an empty hand
 }
 
 
-
+/// Evaluates the rank of a hand based on the given cards.
+/// The hand is assumed to be sorted by rank in descending order.
 fn evaluate_hand(hand: &[Card]) -> HandRank {
     let suits = count_suits(hand);
     let ranks = count_ranks(hand);
@@ -140,29 +150,29 @@ mod tests {
     fn test_best_hand_scenario() {
         // Community cards: 9H, JH, 5C, AS, JD
         let community_cards = vec![
-            create_card(Rank::Nine, Suit::Hearts),
-            create_card(Rank::Jack, Suit::Hearts),
-            create_card(Rank::Five, Suit::Clubs),
-            create_card(Rank::Ace, Suit::Spades),
-            create_card(Rank::Jack, Suit::Diamonds),
+            create_card(Rank::Four, Suit::Spades),
+            create_card(Rank::Eight, Suit::Diamonds),
+            create_card(Rank::Eight, Suit::Hearts),
+            create_card(Rank::Two, Suit::Clubs),
+            create_card(Rank::Jack, Suit::Clubs),
         ];
 
         // Player 1: 5H, 7S
         let player1_cards = vec![
-            create_card(Rank::Five, Suit::Hearts),
-            create_card(Rank::Seven, Suit::Spades),
+            create_card(Rank::Six, Suit::Spades),
+            create_card(Rank::King, Suit::Spades),
         ];
 
         // Player 2: KC, 9H
         let player2_cards = vec![
-            create_card(Rank::King, Suit::Clubs),
-            create_card(Rank::Nine, Suit::Hearts),
+            create_card(Rank::Four, Suit::Diamonds),
+            create_card(Rank::Six, Suit::Clubs),
         ];
 
         // Player 3: 10D, AH
         let player3_cards = vec![
-            create_card(Rank::Ten, Suit::Diamonds),
-            create_card(Rank::Ace, Suit::Hearts),
+            create_card(Rank::Seven, Suit::Diamonds),
+            create_card(Rank::Jack, Suit::Spades),
         ];
 
         // Evaluate the best hand for each player
@@ -172,10 +182,10 @@ mod tests {
 
         // Compare hands to determine the winner
         let mut best_hand = &player1_hand;
-        if player2_hand.compare(best_hand) == std::cmp::Ordering::Greater {
+        if player2_hand.compare_two_hands(best_hand) == std::cmp::Ordering::Greater {
             best_hand = &player2_hand;
         }
-        if player3_hand.compare(best_hand) == std::cmp::Ordering::Greater {
+        if player3_hand.compare_two_hands(best_hand) == std::cmp::Ordering::Greater {
             best_hand = &player3_hand;
         }
 

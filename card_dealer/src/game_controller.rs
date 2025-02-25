@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 
 use crate::card_dealer::{Card, Deck};
 use crate::player::Player;
-use crate::poker_hand::HandRank;
+use crate::poker_hand::{Hand, HandRank};
 use crate::table::Table; // Import Table
 
 pub struct GameController {
@@ -88,7 +88,8 @@ impl GameController {
     /// Returns the indexes of the winning players (more than one in case of a tie)
     pub fn get_winners(&self, player_pool: &[String]) -> Option<Vec<String>> {
         let mut best_hand_rank = HandRank::HighCard;
-        let mut winners: Vec<String> = Vec::new(); // Renamed from `best_players`
+        let mut best_hands: Vec<&Hand> = Vec::new(); // Store best hands for tie-breaking
+        let mut winners: Vec<String> = Vec::new();
     
         for player in self.get_players() {
             if !player_pool.contains(&player.player_id) {
@@ -97,23 +98,48 @@ impl GameController {
     
             if let Some(ref hand) = player.best_hand {
                 if hand.rank > best_hand_rank {
-                    // Found a stronger hand, reset winner list
+                    // Found a stronger hand, reset the winner list
                     best_hand_rank = hand.rank.clone();
+                    best_hands.clear();
                     winners.clear();
+                    best_hands.push(hand);
                     winners.push(player.player_id.clone());
                 } else if hand.rank == best_hand_rank {
-                    // Tie: Add player to winners
-                    winners.push(player.player_id.clone());
+                    if best_hands.is_empty() {
+                        // 🚀 Safety check: Prevent out-of-bounds panic
+                        best_hands.push(hand);
+                        winners.push(player.player_id.clone());
+                    } else {
+                        match hand.compare_two_hands(best_hands[0]) {
+                            Ordering::Greater => {
+                                // New best hand found, reset previous winners
+                                best_hands.clear();
+                                winners.clear();
+                                best_hands.push(hand);
+                                winners.push(player.player_id.clone());
+                            }
+                            Ordering::Equal => {
+                                // Exact tie, keep both players as winners
+                                best_hands.push(hand);
+                                winners.push(player.player_id.clone());
+                            }
+                            Ordering::Less => {
+                                // This hand is weaker, do nothing
+                            }
+                        }
+                    }
                 }
             }
         }
     
         if winners.is_empty() {
-            None // Return None if no winners found
+            None // No winners found
         } else {
-            Some(winners) // Return Some(Vec<String>) if there are winners
+            Some(winners)
         }
     }
+    
+    
 
 
     pub fn resolve_pots(&mut self) {
